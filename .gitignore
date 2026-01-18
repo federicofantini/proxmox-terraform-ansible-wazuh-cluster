@@ -1,0 +1,28 @@
+# Terraform core files
+*.tfstate
+*.tfstate.backup
+*.tfplan
+tfplan
+.terraform*
+.crash
+
+# Provider specific logs (generated automatically)
+terraform-plugin-proxmox.log
+
+# Sensitive variable files (you should keep them out of VCS)
+secret.tfvars
+*.auto.tfvars
+*.auto.tfvars.json
+
+# Ansible files
+inventory.ini
+
+# Local editor / IDE artefacts
+.idea/
+.vscode/
+*.swp
+*~
+.DS_Store
+
+# OS specific temporary files
+/tmp/
