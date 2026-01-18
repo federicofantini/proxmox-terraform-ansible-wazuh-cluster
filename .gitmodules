@@ -1,0 +1,3 @@
+[submodule "ansible/wazuh-ansible"]
+	path = ansible/wazuh-ansible
+	url = https://github.com/wazuh/wazuh-ansible.git
