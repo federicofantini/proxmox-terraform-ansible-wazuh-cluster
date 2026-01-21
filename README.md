@@ -7,6 +7,17 @@ The implementation follows the official Wazuh documentation and extends it with 
 
 ![proxmox status](images/proxmox-status.png)
 
+## Init project
+```
+git clone --recurse-submodules -j8 git@github.com:federicofantini/proxmox-terraform-ansible-wazuh-cluster.git
+cd proxmox-terraform-ansible-wazuh-cluster
+cd ansible/wazuh-ansible
+git fetch origin
+git fetch --tags
+git checkout v4.14.1
+cd ../..
+```
+
 ## Repository Layout
 ```
 ├── ansible/
