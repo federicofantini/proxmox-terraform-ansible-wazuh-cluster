@@ -26,3 +26,11 @@ inventory.ini
 
 # OS specific temporary files
 /tmp/
+
+# generated files
+ansible/indexer
+base.yml
+passwords-api.yml
+passwords-indexer.yml
+wazuh-indexer-and-dashboard.yml
+wazuh-overrides.yml
