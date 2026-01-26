@@ -14,7 +14,7 @@ cd proxmox-terraform-ansible-wazuh-cluster
 cd ansible/wazuh-ansible
 git fetch origin
 git fetch --tags
-git checkout v4.14.1
+git checkout v4.14.2
 cd ../..
 ```
 
@@ -121,7 +121,7 @@ To keep the Ansible playbooks up to date:
 cd ansible/wazuh-ansible
 git fetch origin
 git fetch --tags
-git checkout v4.14.1
+git checkout v4.14.2
 cd ../..
 ```
 
