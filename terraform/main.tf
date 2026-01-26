@@ -581,7 +581,7 @@ resource "null_resource" "update_filebeat_keystore_manager_worker" {
     inline = [
       "set -e",
       "echo 'admin' | sudo filebeat keystore add username --stdin --force",
-      "echo '${var.indexer_admin_password}' | sudo filebeat keystore add password --stdin --force",
+      "printf '%s' '${var.indexer_admin_password}' | sudo filebeat keystore add password --stdin --force",
       "sleep 30 && sudo systemctl restart filebeat",
     ]
 
@@ -631,7 +631,7 @@ resource "null_resource" "update_dashboard_opensearch_keystore" {
       "set -e",
       "sudo systemctl stop wazuh-dashboard || true",
       "echo 'kibanaserver' | sudo /usr/share/wazuh-dashboard/bin/opensearch-dashboards-keystore --allow-root add -f --stdin opensearch.username",
-      "echo '${var.indexer_kibanaserver_password}' | sudo /usr/share/wazuh-dashboard/bin/opensearch-dashboards-keystore --allow-root add -f --stdin opensearch.password",
+      "printf '%s' '${var.indexer_kibanaserver_password}' | sudo /usr/share/wazuh-dashboard/bin/opensearch-dashboards-keystore --allow-root add -f --stdin opensearch.password",
       "sleep 120 && sudo systemctl restart wazuh-dashboard",
     ]
 
