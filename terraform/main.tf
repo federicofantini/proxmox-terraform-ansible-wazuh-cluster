@@ -4,7 +4,7 @@
 locals {
   nginx_extern_ip   = var.nginx_extern_ip
   vm_ip_by_name     = zipmap(var.hostnames, var.ips)
-  dashboard_ip      = local.vm_ip_by_name["wazuh"]
+  dashboard_ip      = local.vm_ip_by_name["dashboard"]
   nginx_local_ip    = local.vm_ip_by_name["nginx"]
 
   nginx_https_conf = <<-EOF
