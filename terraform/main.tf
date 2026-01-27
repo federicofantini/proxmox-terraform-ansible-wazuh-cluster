@@ -4,12 +4,10 @@
 locals {
   nginx_extern_ip   = var.nginx_extern_ip
   vm_ip_by_name     = zipmap(var.hostnames, var.ips)
-  dashboard_ip      = local.vm_ip_by_name["dashboard"]
+  dashboard_ip      = local.vm_ip_by_name["wazuh"]
   nginx_local_ip    = local.vm_ip_by_name["nginx"]
 
   nginx_https_conf = <<-EOF
-# /etc/nginx/sites-available/dashboard
-
 upstream dashboard_backend {
   server ${local.dashboard_ip}:443;
 }
@@ -52,6 +50,28 @@ server {
   return 301 https://$host$request_uri;
 }
 EOF
+
+  nginx_stream_conf = <<-EOF
+upstream wazuh_agent_data {
+  server ${local.dashboard_ip}:1514;
+}
+
+upstream wazuh_agent_enroll {
+  server ${local.dashboard_ip}:1515;
+}
+
+server {
+  listen ${local.nginx_extern_ip}:1514;
+  proxy_pass wazuh_agent_data;
+  proxy_timeout 1h;
+}
+
+server {
+  listen ${local.nginx_extern_ip}:1515;
+  proxy_pass wazuh_agent_enroll;
+  proxy_timeout 10s;
+}
+EOF
 }
 
 resource "null_resource" "configure_nginx" {
@@ -61,18 +81,26 @@ resource "null_resource" "configure_nginx" {
 
       # Install nginx (just to be sure)
       "sudo apt-get update -y",
-      "sudo apt-get install -y nginx openssl",
+      "sudo apt-get install -y nginx openssl libnginx-mod-stream",
+      "sudo grep -q '^include /etc/nginx/modules-enabled/\\*\\.conf;' /etc/nginx/nginx.conf || (echo 'ERROR: nginx.conf missing modules-enabled include' >&2; exit 1)",
 
       # Cert self-signed (if not exists)
       "sudo mkdir -p /etc/nginx/certs",
       "sudo test -f /etc/nginx/certs/dashboard.key -a -f /etc/nginx/certs/dashboard.crt || sudo openssl req -x509 -nodes -newkey rsa:2048 -days 3650 -keyout /etc/nginx/certs/dashboard.key -out /etc/nginx/certs/dashboard.crt -subj '/CN=wazuh-cluster.net'",
 
-      # Write config nginx
+      # Write config HTTP
       "sudo tee /etc/nginx/sites-available/dashboard > /dev/null <<'EOF'\n${replace(local.nginx_https_conf, "\r", "")}\nEOF",
 
       # Enable site
       "sudo rm -f /etc/nginx/sites-enabled/default || true",
       "sudo ln -sf /etc/nginx/sites-available/dashboard /etc/nginx/sites-enabled/dashboard",
+
+      # Write STREAM config
+      "sudo mkdir -p /etc/nginx/stream.d",
+      "sudo tee /etc/nginx/stream.d/wazuh.conf > /dev/null <<'EOF'\n${replace(local.nginx_stream_conf, "\r", "")}\nEOF",
+
+      # Ensure nginx.conf has a stream block that includes stream.d
+      "sudo bash -lc \"grep -qE '^stream[[:space:]]*\\{' /etc/nginx/nginx.conf || sed -i '/^http[[:space:]]*{/i\\stream {\\n  include /etc/nginx/stream.d/*.conf;\\n}\\n' /etc/nginx/nginx.conf\"",
 
       # Test + reload
       "sudo nginx -t",
